@@ -233,6 +233,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 1949381149384945809}
+  - component: {fileID: 3323627783845726947}
   m_Layer: 0
   m_Name: Satellite
   m_TagString: Untagged
@@ -267,6 +268,22 @@ Transform:
   - {fileID: 292861680845142221}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &3323627783845726947
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 338628526389656262}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0f5487c6ebce2224a84acde164e0b8e6, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::SolarPanelDeployment
+  leftHinge: {fileID: 3397386441841749681}
+  rightHinge: {fileID: 2691461053279754562}
+  deploymentSpeed: 60
+  foldAngle: 90
 --- !u!1 &414551354576001803
 GameObject:
   m_ObjectHideFlags: 0
