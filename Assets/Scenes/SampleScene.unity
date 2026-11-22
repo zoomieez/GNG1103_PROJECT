@@ -128,7 +128,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 267785943}
-  - component: {fileID: 267785942}
+  - component: {fileID: 267785944}
   m_Layer: 0
   m_Name: SatellitePathManager
   m_TagString: Untagged
@@ -136,22 +136,6 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!114 &267785942
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 267785941}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 77b3cfab02a2a4541b224348309124cc, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::SatellitePathVisualizer
-  satelliteController: {fileID: 1683437988}
-  dotCount: 180
-  dotSize: 12
-  dotColor: {r: 0.6, g: 0.6, b: 0.6, a: 1}
 --- !u!4 &267785943
 Transform:
   m_ObjectHideFlags: 0
@@ -167,6 +151,23 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &267785944
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 267785941}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 77b3cfab02a2a4541b224348309124cc, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::SatellitePathVisualizer
+  satelliteController: {fileID: 1683437988}
+  dashCount: 180
+  dashLength: 0.35
+  lineWidth: 3
+  lineColor: {r: 0.65, g: 0.65, b: 0.65, a: 1}
 --- !u!1 &280551124
 GameObject:
   m_ObjectHideFlags: 0
@@ -727,8 +728,8 @@ Transform:
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: -8500}
-  m_LocalScale: {x: 17.686367, y: 1.528733, z: 11.675189}
-  m_ConstrainProportionsScale: 1
+  m_LocalScale: {x: 25, y: 25, z: 25}
+  m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
@@ -823,7 +824,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::SatelliteController
   orbitRadius: 11000
-  orbitSpeed: 5
+  orbitSpeed: 2
   speedStep: 100
   maxSpeed: 5000
   orbitInclination: 25

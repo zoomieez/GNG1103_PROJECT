@@ -6,96 +6,151 @@ public class SatellitePathVisualizer : MonoBehaviour
     [Header("References")]
     public SatelliteController satelliteController;
 
-    [Header("Orbit Dots")]
-    public int dotCount = 180;
-    public float dotSize = 12f;
-    public Color dotColor = new Color(0.6f, 0.6f, 0.6f);
+    [Header("Orbit Appearance")]
+    public int dashCount = 180;
+    public float dashLength = 0.35f;
+    public float lineWidth = 6f;
+    public Color lineColor =
+        new Color(0.65f, 0.65f, 0.65f, 1f);
+
+    private Material orbitMaterial;
 
     void Start()
     {
         if (satelliteController == null)
         {
-            Debug.LogError("Assign the Satellite Controller!");
+            Debug.LogError(
+                "Assign Satellite Controller!"
+            );
             enabled = false;
             return;
         }
 
-        CreateOrbitDots();
+        CreateOrbit();
     }
 
-    void CreateOrbitDots()
+    void CreateOrbit()
     {
         Transform earth = satelliteController.earth;
 
         if (earth == null)
             return;
 
-        // Calculate Earth's center
         Renderer[] renderers =
             earth.GetComponentsInChildren<Renderer>();
 
         Vector3 center = earth.position;
+        bool found = false;
+        Bounds bounds = new Bounds();
 
-        if (renderers.Length > 0)
+        foreach (Renderer r in renderers)
         {
-            Bounds bounds = renderers[0].bounds;
+            if (!r.enabled) continue;
 
-            foreach (Renderer r in renderers)
+            if (!found)
             {
-                if (r.enabled)
-                    bounds.Encapsulate(r.bounds);
+                bounds = r.bounds;
+                found = true;
             }
-
-            center = bounds.center;
+            else
+            {
+                bounds.Encapsulate(r.bounds);
+            }
         }
+
+        if (found)
+            center = bounds.center;
 
         float radius = satelliteController.orbitRadius;
-        float inclination = satelliteController.orbitInclination;
 
-        Quaternion tilt =
-            Quaternion.Euler(inclination, 0f, 0f);
-
-        // Create one material shared by all dots
-        Material dotMaterial = new Material(
-            Shader.Find("Universal Render Pipeline/Unlit")
+        Quaternion tilt = Quaternion.Euler(
+            satelliteController.orbitInclination,
+            0f,
+            0f
         );
 
-        dotMaterial.color = dotColor;
+        Shader shader =
+            Shader.Find("Universal Render Pipeline/Unlit");
 
-        for (int i = 0; i < dotCount; i++)
+        if (shader == null)
+            shader = Shader.Find("Sprites/Default");
+
+        if (shader == null)
         {
-            float angle =
-                (i / (float)dotCount) * 360f;
+            Debug.LogError("No suitable orbit shader found.");
+            return;
+        }
 
-            float radians = angle * Mathf.Deg2Rad;
+        orbitMaterial = new Material(shader);
+        orbitMaterial.color = lineColor;
 
-            Vector3 localPosition = new Vector3(
-                Mathf.Cos(radians) * radius,
-                0f,
-                Mathf.Sin(radians) * radius
+        for (int i = 0; i < dashCount; i++)
+        {
+            float startAngle =
+                i * 360f / dashCount;
+
+            float endAngle =
+                startAngle +
+                (360f / dashCount) *
+                Mathf.Clamp01(dashLength);
+
+            GameObject dash =
+                new GameObject("OrbitLine_" + i);
+
+            dash.transform.SetParent(transform);
+
+            LineRenderer line =
+                dash.AddComponent<LineRenderer>();
+
+            line.useWorldSpace = true;
+            line.positionCount = 2;
+
+            line.startWidth = lineWidth;
+            line.endWidth = lineWidth;
+
+            line.startColor = lineColor;
+            line.endColor = lineColor;
+
+            line.numCapVertices = 0;
+            line.material = orbitMaterial;
+
+            line.SetPosition(
+                0,
+                GetOrbitPoint(
+                    center, radius, tilt, startAngle
+                )
             );
 
-            Vector3 worldPosition =
-                center + tilt * localPosition;
-
-            GameObject dot =
-                GameObject.CreatePrimitive(PrimitiveType.Sphere);
-
-            dot.name = "OrbitDot_" + i;
-            dot.transform.SetParent(transform);
-            dot.transform.position = worldPosition;
-            dot.transform.localScale =
-                Vector3.one * dotSize;
-
-            // Remove unnecessary physics collider
-            Collider collider = dot.GetComponent<Collider>();
-
-            if (collider != null)
-                Destroy(collider);
-
-            // Apply grey material
-            Renderer renderer = dot.GetComponent<Renderer>();
-            renderer.sharedMaterial = dotMaterial;
+            line.SetPosition(
+                1,
+                GetOrbitPoint(
+                    center, radius, tilt, endAngle
+                )
+            );
         }
+    }
+
+    Vector3 GetOrbitPoint(
+        Vector3 center,
+        float radius,
+        Quaternion tilt,
+        float angle
+    )
+    {
+        float radians = angle * Mathf.Deg2Rad;
+
+        Vector3 position = new Vector3(
+            Mathf.Cos(radians) * radius,
+            0f,
+            Mathf.Sin(radians) * radius
+        );
+
+        return center + tilt * position;
+    }
+
+    void OnDestroy()
+    {
+        if (orbitMaterial != null)
+            Destroy(orbitMaterial);
     }
 }
