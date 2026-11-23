@@ -589,6 +589,10 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 3323627783845726947, guid: 60c93060cab62b042b39b3dc96726f1e, type: 3}
+      propertyPath: telemetry
+      value: 
+      objectReference: {fileID: 1643027034}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
@@ -751,6 +755,7 @@ MonoBehaviour:
   panelWidth: 400
   slideSpeed: 12
   fontSize: 18
+  solarPanelDeployment: {fileID: 0}
   solarWingsDeployed: 1
   antennaDeployed: 1
   missionNominal: 1
@@ -908,8 +913,11 @@ MonoBehaviour:
   rotationSpeed: {x: 2, y: 3, z: 1}
   satelliteCamera: {fileID: 330585545}
   earth: {fileID: 1524927692}
+  sun: {fileID: 1439323016}
   satelliteCameraDistance: 100
-  earthViewDistanceMultiplier: 1.8
+  earthViewCameraDistance: 250
+  sunViewCameraDistance: 250
+  earthViewFieldOfView: 60
   mouseSensitivity: 3
   minPitch: -80
   maxPitch: 80

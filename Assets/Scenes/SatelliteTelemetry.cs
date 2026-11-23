@@ -15,7 +15,8 @@ public class SatelliteTelemetry : MonoBehaviour
     public int fontSize = 20;
 
     [Header("Satellite Components")]
-    public bool solarWingsDeployed = true;
+    public SolarPanelDeployment solarPanelDeployment;
+    public bool solarWingsDeployed = false;
     public bool antennaDeployed = true;
 
     [Header("Mission Status")]
@@ -61,6 +62,7 @@ public class SatelliteTelemetry : MonoBehaviour
             Debug.LogError(
                 "Assign Satellite and Earth to SatelliteTelemetry!"
             );
+
             enabled = false;
             return;
         }
@@ -76,6 +78,8 @@ public class SatelliteTelemetry : MonoBehaviour
         );
 
         UpdateTelemetry();
+
+        nextUpdateTime = Time.time + updateInterval;
     }
 
     void CalculateEarthDimensions()
@@ -135,24 +139,31 @@ public class SatelliteTelemetry : MonoBehaviour
             panelX = Mathf.Lerp(
                 panelX,
                 targetX,
-                Mathf.Clamp01(slideSpeed * Time.deltaTime)
+                Mathf.Clamp01(
+                    slideSpeed * Time.deltaTime
+                )
             );
         }
     }
-
 
     void UpdateTelemetry()
     {
         if (satellite == null)
             return;
 
+        // Calculate altitude
         float distanceFromCenter =
-            Vector3.Distance(satellite.position, earthCenter);
+            Vector3.Distance(
+                satellite.position,
+                earthCenter
+            );
 
         altitude = distanceFromCenter - earthRadius;
+
+        // Satellite rotation
         rotation = satellite.eulerAngles;
 
-        // Automatically update sunlight status
+        // Check sunlight status
         if (sun != null)
         {
             sunlightConfigured = true;
@@ -161,16 +172,19 @@ public class SatelliteTelemetry : MonoBehaviour
         else
         {
             sunlightConfigured = false;
-            Debug.LogWarning(
-                "SatelliteTelemetry: Sun is not assigned!"
-            );
+            satelliteSunlit = false;
         }
 
+        // Read actual solar panel deployment state
+        if (solarPanelDeployment != null)
+        {
+            solarWingsDeployed =
+                solarPanelDeployment.IsDeployed;
+        }
+
+        // Record last telemetry update
         lastPositionUpdate = DateTime.Now;
     }
-
-
-
 
     bool CheckSunlight()
     {
@@ -181,6 +195,7 @@ public class SatelliteTelemetry : MonoBehaviour
         Vector3 end = sun.position;
 
         Vector3 direction = end - start;
+
         float distanceToSun = direction.magnitude;
 
         if (distanceToSun < 0.001f)
@@ -191,9 +206,14 @@ public class SatelliteTelemetry : MonoBehaviour
         // Ray from satellite toward Sun
         Vector3 offset = start - earthCenter;
 
-        float b = Vector3.Dot(offset, direction);
-        float c = Vector3.Dot(offset, offset)
-                  - earthRadius * earthRadius;
+        float b = Vector3.Dot(
+            offset,
+            direction
+        );
+
+        float c =
+            Vector3.Dot(offset, offset) -
+            earthRadius * earthRadius;
 
         float discriminant = b * b - c;
 
@@ -201,13 +221,17 @@ public class SatelliteTelemetry : MonoBehaviour
         if (discriminant < 0f)
             return true;
 
-        float sqrtDiscriminant = Mathf.Sqrt(discriminant);
+        float sqrtDiscriminant =
+            Mathf.Sqrt(discriminant);
 
-        float nearIntersection = -b - sqrtDiscriminant;
-        float farIntersection = -b + sqrtDiscriminant;
+        float nearIntersection =
+            -b - sqrtDiscriminant;
 
-        // Earth blocks sunlight if the ray intersects
-        // the Earth sphere between satellite and Sun
+        float farIntersection =
+            -b + sqrtDiscriminant;
+
+        // Earth blocks sunlight if intersection
+        // occurs between satellite and Sun
         bool earthBlocksSun =
             (nearIntersection >= 0f &&
              nearIntersection < distanceToSun) ||
@@ -217,16 +241,15 @@ public class SatelliteTelemetry : MonoBehaviour
         return !earthBlocksSun;
     }
 
-
     void OnGUI()
     {
         if (satellite == null || earth == null)
             return;
 
         InitializeStyles();
+
         GUI.color = Color.white;
         GUI.contentColor = Color.white;
-
 
         float tabWidth = 42f;
         float tabHeight = 120f;
@@ -248,10 +271,12 @@ public class SatelliteTelemetry : MonoBehaviour
         HandleTabInput(tab);
 
         // Sidebar background
-        GUI.DrawTexture(panel, panelTexture);
+        if (panelTexture != null)
+            GUI.DrawTexture(panel, panelTexture);
 
         // Draggable tab
-        GUI.DrawTexture(tab, tabTexture);
+        if (tabTexture != null)
+            GUI.DrawTexture(tab, tabTexture);
 
         GUI.Label(
             tab,
@@ -274,92 +299,133 @@ public class SatelliteTelemetry : MonoBehaviour
 
         y += 75f;
 
-        // Altitude section
+        // ALTITUDE & ORIENTATION
         DrawHeading(
             "ALTITUDE & ORIENTATION",
-            x, ref y, contentWidth
+            x,
+            ref y,
+            contentWidth
         );
 
         DrawText(
-            "Altitude: " + altitude.ToString("F1") + " units",
-            x, ref y, contentWidth
+            "Altitude: " +
+            altitude.ToString("F1") +
+            " units",
+            x,
+            ref y,
+            contentWidth
         );
 
         DrawText(
-            "Rotation X: " + rotation.x.ToString("F1") + "°",
-            x, ref y, contentWidth
+            "Rotation X: " +
+            rotation.x.ToString("F1") + "°",
+            x,
+            ref y,
+            contentWidth
         );
 
         DrawText(
-            "Rotation Y: " + rotation.y.ToString("F1") + "°",
-            x, ref y, contentWidth
+            "Rotation Y: " +
+            rotation.y.ToString("F1") + "°",
+            x,
+            ref y,
+            contentWidth
         );
 
         DrawText(
-            "Rotation Z: " + rotation.z.ToString("F1") + "°",
-            x, ref y, contentWidth
+            "Rotation Z: " +
+            rotation.z.ToString("F1") + "°",
+            x,
+            ref y,
+            contentWidth
         );
 
         y += 20f;
 
-        // Satellite panels
+        // SATELLITE PANELS
         DrawHeading(
             "SATELLITE PANELS",
-            x, ref y, contentWidth
+            x,
+            ref y,
+            contentWidth
         );
 
         DrawText(
             "Solar Wings: " +
-            (solarWingsDeployed ? "DEPLOYED" : "STOWED"),
-            x, ref y, contentWidth
+            (solarWingsDeployed
+                ? "DEPLOYED"
+                : "STOWED"),
+            x,
+            ref y,
+            contentWidth
         );
 
         DrawText(
             "Antenna: " +
-            (antennaDeployed ? "DEPLOYED" : "STOWED"),
-            x, ref y, contentWidth
+            (antennaDeployed
+                ? "DEPLOYED"
+                : "STOWED"),
+            x,
+            ref y,
+            contentWidth
         );
 
         y += 20f;
 
-        // Mission status
+        // MISSION STATUS
         DrawHeading(
             "MISSION STATUS",
-            x, ref y, contentWidth
+            x,
+            ref y,
+            contentWidth
         );
 
         DrawText(
             "Mission: " +
-            (missionNominal ? "NOMINAL" : "NON-NOMINAL"),
-            x, ref y, contentWidth
+            (missionNominal
+                ? "NOMINAL"
+                : "NON-NOMINAL"),
+            x,
+            ref y,
+            contentWidth
         );
 
         string sunlightStatus =
             !sunlightConfigured
                 ? "NOT CONFIGURED"
-                : satelliteSunlit ? "SUNLIT" : "ECLIPSED";
+                : satelliteSunlit
+                    ? "SUNLIT"
+                    : "ECLIPSED";
 
         DrawText(
             "Sunlight: " + sunlightStatus,
-            x, ref y, contentWidth
+            x,
+            ref y,
+            contentWidth
         );
 
         y += 20f;
 
-        // Last position update
+        // POSITION DATA
         DrawHeading(
             "POSITION DATA",
-            x, ref y, contentWidth
+            x,
+            ref y,
+            contentWidth
         );
 
         DrawText(
             "Last Updated:",
-            x, ref y, contentWidth
+            x,
+            ref y,
+            contentWidth
         );
 
         DrawText(
             lastPositionUpdate.ToString("HH:mm:ss"),
-            x, ref y, contentWidth
+            x,
+            ref y,
+            contentWidth
         );
 
         GUI.EndGroup();
@@ -400,8 +466,8 @@ public class SatelliteTelemetry : MonoBehaviour
         {
             dragging = false;
 
-            // Snap open or closed
-            panelOpen = panelX > -panelWidth / 2f;
+            panelOpen =
+                panelX > -panelWidth / 2f;
 
             e.Use();
         }
@@ -439,7 +505,6 @@ public class SatelliteTelemetry : MonoBehaviour
         y += 37f;
     }
 
-
     void InitializeStyles()
     {
         if (titleStyle == null)
@@ -470,15 +535,17 @@ public class SatelliteTelemetry : MonoBehaviour
         tabStyle.fontSize = 30;
         tabStyle.fontStyle = FontStyle.Bold;
         tabStyle.normal.textColor = Color.white;
-        tabStyle.alignment = TextAnchor.MiddleCenter;
+        tabStyle.alignment =
+            TextAnchor.MiddleCenter;
     }
-
 
     Texture2D MakeTexture(Color color)
     {
         Texture2D texture = new Texture2D(1, 1);
+
         texture.SetPixel(0, 0, color);
         texture.Apply();
+
         return texture;
     }
 

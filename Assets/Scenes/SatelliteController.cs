@@ -5,9 +5,9 @@ public class SatelliteController : MonoBehaviour
 {
     [Header("Orbital Movement")]
     public float orbitRadius = 11000f;
-    public float orbitSpeed = 5f;
-    public float speedStep = 1f;
-    public float maxSpeed = 50f;
+    public float orbitSpeed = 2f;
+    public float speedStep = 100f;
+    public float maxSpeed = 5000f;
     public float orbitInclination = 25f;
 
     [Header("Manual Debug Movement")]
@@ -20,35 +20,43 @@ public class SatelliteController : MonoBehaviour
     [Header("Camera Tracking")]
     public Camera satelliteCamera;
     public Transform earth;
+    public Transform sun;
 
     [Header("Camera Settings")]
     public float satelliteCameraDistance = 100f;
-    public float earthViewDistanceMultiplier = 1.8f;
+    public float earthViewCameraDistance = 250f;
+    public float sunViewCameraDistance = 250f;
+    public float earthViewFieldOfView = 60f;
 
     [Header("Mouse Camera Controls")]
     public float mouseSensitivity = 3f;
     public float minPitch = -80f;
     public float maxPitch = 80f;
 
-    private bool earthView = false;
-    private float earthRadius = 7000f;
-    private Vector3 earthCenter;
+    private int cameraMode = 0;
 
+    private Vector3 earthCenter;
     private float orbitAngle = 0f;
-    private float cameraYaw;
-    private float cameraPitch = 25f;
+    private float cameraYaw = 0f;
+    private float cameraPitch = 15f;
+    private float originalFieldOfView;
 
     void Start()
     {
         if (satelliteCamera == null)
             satelliteCamera = Camera.main;
 
-        if (earth == null)
+        if (earth == null || satelliteCamera == null)
         {
-            Debug.LogError("Assign EarthHigh to the Earth field!");
+            Debug.LogError(
+                "Assign Earth and Main Camera!"
+            );
             enabled = false;
             return;
         }
+
+        originalFieldOfView =
+            satelliteCamera.fieldOfView;
 
         Renderer[] renderers =
             earth.GetComponentsInChildren<Renderer>();
@@ -71,34 +79,18 @@ public class SatelliteController : MonoBehaviour
             }
         }
 
-        if (found)
-        {
-            earthCenter = bounds.center;
-            earthRadius = Mathf.Max(
-                bounds.extents.x,
-                bounds.extents.y,
-                bounds.extents.z
-            );
-        }
-        else
-        {
-            earthCenter = earth.position;
-        }
+        earthCenter = found
+            ? bounds.center
+            : earth.position;
 
-        if (satelliteCamera != null)
-        {
-            satelliteCamera.farClipPlane =
-                Mathf.Max(100000f, earthRadius * 10f);
-        }
+        satelliteCamera.farClipPlane = 100000f;
 
-        // Position satellite on its orbit
         UpdateOrbitPosition();
         UpdateCamera();
     }
 
     void Update()
     {
-        // Increase orbital speed
         if (Input.GetKeyDown(KeyCode.UpArrow))
         {
             orbitSpeed = Mathf.Min(
@@ -107,7 +99,6 @@ public class SatelliteController : MonoBehaviour
             );
         }
 
-        // Decrease orbital speed
         if (Input.GetKeyDown(KeyCode.DownArrow))
         {
             orbitSpeed = Mathf.Max(
@@ -116,70 +107,70 @@ public class SatelliteController : MonoBehaviour
             );
         }
 
-        // Advance satellite along orbital path
         orbitAngle += orbitSpeed * Time.deltaTime;
         orbitAngle %= 360f;
 
         UpdateOrbitPosition();
 
-        // Optional manual movement for debugging
         if (allowManualMovement)
         {
             Vector3 movement = Vector3.zero;
 
-            if (Input.GetKey(KeyCode.W)) movement.z += 1;
-            if (Input.GetKey(KeyCode.S)) movement.z -= 1;
-            if (Input.GetKey(KeyCode.A)) movement.x -= 1;
-            if (Input.GetKey(KeyCode.D)) movement.x += 1;
-            if (Input.GetKey(KeyCode.Q)) movement.y -= 1;
-            if (Input.GetKey(KeyCode.E)) movement.y += 1;
+            if (Input.GetKey(KeyCode.W)) movement.z++;
+            if (Input.GetKey(KeyCode.S)) movement.z--;
+            if (Input.GetKey(KeyCode.A)) movement.x--;
+            if (Input.GetKey(KeyCode.D)) movement.x++;
+            if (Input.GetKey(KeyCode.Q)) movement.y--;
+            if (Input.GetKey(KeyCode.E)) movement.y++;
 
             transform.position +=
-                movement.normalized * moveSpeed * Time.deltaTime;
+                movement.normalized *
+                moveSpeed * Time.deltaTime;
         }
 
-        // Continuous satellite rotation
         transform.Rotate(
             rotationSpeed * Time.deltaTime,
             Space.Self
         );
 
-        // Toggle camera views
         if (Input.GetKeyDown(KeyCode.C))
-            earthView = !earthView;
+            cameraMode = (cameraMode + 1) % 3;
 
-        // Mouse orbit camera
-        if (!earthView && Input.GetMouseButton(1))
+        if (cameraMode == 0 &&
+            Input.GetMouseButton(1))
         {
             cameraYaw +=
-                Input.GetAxis("Mouse X") * mouseSensitivity;
+                Input.GetAxis("Mouse X") *
+                mouseSensitivity;
 
             cameraPitch -=
-                Input.GetAxis("Mouse Y") * mouseSensitivity;
+                Input.GetAxis("Mouse Y") *
+                mouseSensitivity;
 
             cameraPitch = Mathf.Clamp(
-                cameraPitch,
-                minPitch,
-                maxPitch
+                cameraPitch, minPitch, maxPitch
             );
         }
     }
 
     void UpdateOrbitPosition()
     {
-        float radians = orbitAngle * Mathf.Deg2Rad;
+        float radians =
+            orbitAngle * Mathf.Deg2Rad;
 
-        Vector3 localPosition = new Vector3(
+        Vector3 orbitPosition = new Vector3(
             Mathf.Cos(radians) * orbitRadius,
             0f,
             Mathf.Sin(radians) * orbitRadius
         );
 
         Quaternion inclination =
-            Quaternion.Euler(orbitInclination, 0f, 0f);
+            Quaternion.Euler(
+                orbitInclination, 0f, 0f
+            );
 
         transform.position =
-            earthCenter + inclination * localPosition;
+            earthCenter + inclination * orbitPosition;
     }
 
     void LateUpdate()
@@ -189,37 +180,86 @@ public class SatelliteController : MonoBehaviour
 
     void UpdateCamera()
     {
-        if (satelliteCamera == null || earth == null)
+        if (satelliteCamera == null)
             return;
 
-        Vector3 direction =
+        Vector3 outward =
             transform.position - earthCenter;
 
-        if (direction.sqrMagnitude < 0.001f)
-            direction = Vector3.back;
+        if (outward.sqrMagnitude < 0.001f)
+            outward = Vector3.back;
 
-        direction.Normalize();
+        outward.Normalize();
 
-        if (earthView)
+        if (cameraMode == 1)
         {
-            Vector3 cameraDirection =
-                (Vector3.back + Vector3.up * 0.3f).normalized;
+            // EARTH VIEW
+            // Satellite in foreground, Earth behind it.
+
+            Vector3 towardEarth =
+                (earthCenter - transform.position).normalized;
 
             satelliteCamera.transform.position =
-                earthCenter +
-                cameraDirection *
-                earthRadius *
-                earthViewDistanceMultiplier;
+                transform.position -
+                towardEarth * earthViewCameraDistance;
 
-            satelliteCamera.transform.LookAt(earthCenter);
+            satelliteCamera.transform.LookAt(
+                earthCenter,
+                Vector3.up
+            );
+
+            satelliteCamera.fieldOfView =
+                earthViewFieldOfView;
         }
+
+        else if (cameraMode == 2 && sun != null)
+        {
+            // SUN VIEW
+            // Camera follows the satellite but is offset
+            // so the satellite doesn't block the Sun.
+
+            Vector3 towardSun =
+                (sun.position - transform.position).normalized;
+
+            // Move camera away from the Sun
+            Vector3 cameraPosition =
+                transform.position -
+                towardSun * sunViewCameraDistance;
+
+            // Shift camera sideways relative to the Sun axis
+            Vector3 sideways =
+                Vector3.Cross(towardSun, Vector3.up).normalized;
+
+            if (sideways.sqrMagnitude < 0.001f)
+                sideways = Vector3.right;
+
+            cameraPosition +=
+                sideways * sunViewCameraDistance * 0.35f;
+
+            satelliteCamera.transform.position = cameraPosition;
+
+            // Keep satellite centered while showing Sun off-axis
+            satelliteCamera.transform.LookAt(
+                transform.position,
+                Vector3.up
+            );
+
+            satelliteCamera.fieldOfView =
+                earthViewFieldOfView;
+        }
+
         else
         {
-            Quaternion orbitRotation =
-                Quaternion.Euler(cameraPitch, cameraYaw, 0f);
+            // SATELLITE VIEW
+            // Close-up camera with mouse controls.
+
+            Quaternion mouseRotation =
+                Quaternion.Euler(
+                    cameraPitch, cameraYaw, 0f
+                );
 
             Vector3 cameraDirection =
-                orbitRotation * direction;
+                mouseRotation * outward;
 
             satelliteCamera.transform.position =
                 transform.position +
@@ -229,6 +269,9 @@ public class SatelliteController : MonoBehaviour
                 transform.position,
                 Vector3.up
             );
+
+            satelliteCamera.fieldOfView =
+                originalFieldOfView;
         }
     }
 }
