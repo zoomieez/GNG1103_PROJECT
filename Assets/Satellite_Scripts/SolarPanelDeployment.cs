@@ -1,4 +1,3 @@
-
 using UnityEngine;
 
 public class SolarPanelDeployment : MonoBehaviour
@@ -20,19 +19,35 @@ public class SolarPanelDeployment : MonoBehaviour
     private bool isDeployed = false;
     private bool manualOverrideActive = false;
 
+    // Check actual solar panel positions
     public bool IsDeployed
     {
-        get { return isDeployed; }
+        get
+        {
+            if (leftHinge == null || rightHinge == null)
+                return false;
+
+            float leftAngle = Mathf.Abs(
+                Mathf.DeltaAngle(
+                    leftHinge.localEulerAngles.z, 0f
+                )
+            );
+
+            float rightAngle = Mathf.Abs(
+                Mathf.DeltaAngle(
+                    rightHinge.localEulerAngles.z, 0f
+                )
+            );
+
+            return leftAngle < 1f && rightAngle < 1f;
+        }
     }
 
     void Start()
     {
         if (leftHinge == null || rightHinge == null)
         {
-            Debug.LogError(
-                "Assign both solar panel hinges!"
-            );
-
+            Debug.LogError("Assign both solar panel hinges!");
             enabled = false;
             return;
         }
@@ -46,7 +61,7 @@ public class SolarPanelDeployment : MonoBehaviour
 
     void Update()
     {
-        // Automatically deploy based on sunlight
+        // Automatic sunlight-based deployment
         if (!manualOverrideActive && telemetry != null)
         {
             if (telemetry.sunlightConfigured)
@@ -55,7 +70,7 @@ public class SolarPanelDeployment : MonoBehaviour
             }
         }
 
-        // Optional manual override using P
+        // Optional manual override
         if (allowManualOverride &&
             Input.GetKeyDown(KeyCode.P))
         {
@@ -64,20 +79,9 @@ public class SolarPanelDeployment : MonoBehaviour
             if (manualOverrideActive)
             {
                 isDeployed = !isDeployed;
-
-                Debug.Log(
-                    "Manual solar panel override enabled."
-                );
-            }
-            else
-            {
-                Debug.Log(
-                    "Automatic solar panel deployment restored."
-                );
             }
         }
 
-        // Target rotation angles
         float leftTarget =
             isDeployed ? 0f : -foldAngle;
 
@@ -90,7 +94,6 @@ public class SolarPanelDeployment : MonoBehaviour
         Vector3 rightRotation =
             rightHinge.localEulerAngles;
 
-        // Smooth deployment
         leftRotation.z = Mathf.MoveTowardsAngle(
             leftRotation.z,
             leftTarget,

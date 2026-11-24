@@ -349,6 +349,11 @@ MonoBehaviour:
     m_VarianceClampScale: 0.9
     m_ContrastAdaptiveSharpening: 0
   m_Version: 2
+--- !u!4 &356171565 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: 2691461053279754562, guid: 60c93060cab62b042b39b3dc96726f1e, type: 3}
+  m_PrefabInstance: {fileID: 1288637690}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1 &410087039
 GameObject:
   m_ObjectHideFlags: 0
@@ -476,6 +481,11 @@ MonoBehaviour:
   m_ShadowLayerMask: 1
   m_RenderingLayers: 1
   m_ShadowRenderingLayers: 1
+--- !u!4 &795078042 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: 3397386441841749681, guid: 60c93060cab62b042b39b3dc96726f1e, type: 3}
+  m_PrefabInstance: {fileID: 1288637690}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1 &832575517
 GameObject:
   m_ObjectHideFlags: 0
@@ -603,6 +613,56 @@ Transform:
   m_CorrespondingSourceObject: {fileID: 1949381149384945809, guid: 60c93060cab62b042b39b3dc96726f1e, type: 3}
   m_PrefabInstance: {fileID: 1288637690}
   m_PrefabAsset: {fileID: 0}
+--- !u!1 &1426792358
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1426792359}
+  - component: {fileID: 1426792360}
+  m_Layer: 0
+  m_Name: SolarPanelDeployment
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1426792359
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1426792358}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 21309.324, y: 7564.879, z: -12340.387}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1426792360
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1426792358}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0f5487c6ebce2224a84acde164e0b8e6, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::SolarPanelDeployment
+  leftHinge: {fileID: 795078042}
+  rightHinge: {fileID: 356171565}
+  deploymentSpeed: 60
+  foldAngle: 90
+  telemetry: {fileID: 1643027034}
+  allowManualOverride: 0
 --- !u!1 &1439323012
 GameObject:
   m_ObjectHideFlags: 0
@@ -755,7 +815,7 @@ MonoBehaviour:
   panelWidth: 400
   slideSpeed: 12
   fontSize: 18
-  solarPanelDeployment: {fileID: 0}
+  solarPanelDeployment: {fileID: 1426792360}
   solarWingsDeployed: 1
   antennaDeployed: 1
   missionNominal: 1
@@ -790,6 +850,7 @@ GameObject:
   - component: {fileID: 1683437986}
   - component: {fileID: 1683437985}
   - component: {fileID: 1683437988}
+  - component: {fileID: 1683437989}
   m_Layer: 0
   m_Name: SatelliteOrbit
   m_TagString: Untagged
@@ -921,6 +982,24 @@ MonoBehaviour:
   mouseSensitivity: 3
   minPitch: -80
   maxPitch: 80
+--- !u!114 &1683437989
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1683437983}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0f5487c6ebce2224a84acde164e0b8e6, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::SolarPanelDeployment
+  leftHinge: {fileID: 795078042}
+  rightHinge: {fileID: 356171565}
+  deploymentSpeed: 60
+  foldAngle: 90
+  telemetry: {fileID: 1643027034}
+  allowManualOverride: 0
 --- !u!1001 &2094232466871607905
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -991,3 +1070,4 @@ SceneRoots:
   - {fileID: 280551126}
   - {fileID: 267785943}
   - {fileID: 1439323016}
+  - {fileID: 1426792359}
