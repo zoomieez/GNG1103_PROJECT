@@ -851,6 +851,7 @@ GameObject:
   - component: {fileID: 1683437985}
   - component: {fileID: 1683437988}
   - component: {fileID: 1683437989}
+  - component: {fileID: 1683437990}
   m_Layer: 0
   m_Name: SatelliteOrbit
   m_TagString: Untagged
@@ -1000,6 +1001,22 @@ MonoBehaviour:
   foldAngle: 90
   telemetry: {fileID: 1643027034}
   allowManualOverride: 0
+--- !u!114 &1683437990
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1683437983}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 378af990017cc4346b9378e92ce5165c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::SatelliteGhostTrail
+  satellite: {fileID: 1683437984}
+  delaySeconds: 5
+  ghostOpacity: 0.2
+  recordInterval: 0.02
 --- !u!1001 &2094232466871607905
 PrefabInstance:
   m_ObjectHideFlags: 0
