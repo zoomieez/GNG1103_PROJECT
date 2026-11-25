@@ -7,6 +7,7 @@ public class SolarPanelDeployment : MonoBehaviour
     public Transform rightHinge;
 
     [Header("Deployment Settings")]
+    public AudioSource wingAudio;
     public float deploymentSpeed = 60f;
     public float foldAngle = 90f;
 
@@ -59,31 +60,40 @@ public class SolarPanelDeployment : MonoBehaviour
             Quaternion.Euler(0f, 0f, foldAngle);
     }
 
-    void Update()
+void Update()
+{
+    bool wasDeployed = isDeployed;
+
+    // Automatic sunlight-based deployment
+    if (!manualOverrideActive && telemetry != null)
     {
-        // Automatic sunlight-based deployment
-        if (!manualOverrideActive && telemetry != null)
+        if (telemetry.sunlightConfigured)
         {
-            if (telemetry.sunlightConfigured)
-            {
-                isDeployed = telemetry.satelliteSunlit;
-            }
+            isDeployed = telemetry.satelliteSunlit;
         }
+    }
 
-        // Optional manual override
-        if (allowManualOverride &&
-            Input.GetKeyDown(KeyCode.P))
+    // Optional manual override
+    if (allowManualOverride &&
+        Input.GetKeyDown(KeyCode.P))
+    {
+        manualOverrideActive = !manualOverrideActive;
+
+        if (manualOverrideActive)
         {
-            manualOverrideActive = !manualOverrideActive;
-
-            if (manualOverrideActive)
-            {
-                isDeployed = !isDeployed;
-            }
+            isDeployed = !isDeployed;
         }
+    }
 
-        float leftTarget =
-            isDeployed ? 0f : -foldAngle;
+    // Play once when deployment begins
+    if (!wasDeployed && isDeployed && wingAudio != null)
+    {
+        wingAudio.Play();
+    }
+
+    float leftTarget =
+        isDeployed ? 0f : -foldAngle;
+
 
         float rightTarget =
             isDeployed ? 0f : foldAngle;
