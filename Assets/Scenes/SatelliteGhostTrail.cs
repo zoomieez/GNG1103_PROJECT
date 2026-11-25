@@ -15,6 +15,8 @@ public class SatelliteGhostTrail : MonoBehaviour
 
     public float recordInterval = 0.02f;
 
+    public string ghostLayerName = "SatelliteGhost";
+
     private GameObject ghost;
     private Material ghostMaterial;
 
@@ -52,6 +54,22 @@ public class SatelliteGhostTrail : MonoBehaviour
     void CreateGhost()
     {
         ghost = new GameObject("Satellite Ghost");
+
+        // Assign the ghost to its own layer
+        int ghostLayer = LayerMask.NameToLayer(
+            ghostLayerName
+        );
+
+        if (ghostLayer == -1)
+        {
+            Debug.LogWarning(
+                "SatelliteGhost layer not found!"
+            );
+
+            ghostLayer = 0;
+        }
+
+        ghost.layer = ghostLayer;
 
         Shader shader = Shader.Find(
             "Universal Render Pipeline/Unlit"
@@ -111,6 +129,9 @@ public class SatelliteGhostTrail : MonoBehaviour
             part.transform.SetParent(
                 ghost.transform, false
             );
+
+            // Assign each ghost mesh to the ghost layer
+            part.layer = ghostLayer;
 
             MeshFilter filter =
                 part.AddComponent<MeshFilter>();
@@ -186,7 +207,6 @@ public class SatelliteGhostTrail : MonoBehaviour
         float targetTime =
             Time.time - Mathf.Max(0f, delaySeconds);
 
-        // Keep enough history for delay adjustments
         float retentionTime =
             Mathf.Max(10f, delaySeconds + 1f);
 

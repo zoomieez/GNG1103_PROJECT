@@ -119,6 +119,58 @@ NavMeshSettings:
     debug:
       m_Flags: 0
   m_NavMeshData: {fileID: 0}
+--- !u!1 &158922177
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 158922178}
+  - component: {fileID: 158922179}
+  m_Layer: 0
+  m_Name: SatelliteCameraManager
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &158922178
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 158922177}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 56635.844, y: 0.00017, z: -380.75858}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &158922179
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 158922177}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 118ad5a1873eaf24782dcf92d3684b8c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::SatelliteCameraFeed
+  onboardCamera: {fileID: 1288637692}
+  cameraFeed: {fileID: 8400000, guid: 8840f2be8b75add4d87e70ec4612eb40, type: 2}
+  feedWidth: 500
+  feedHeight: 280
+  margin: 20
+  borderWidth: 2
+  startMinimized: 0
+  fullscreenKey: 118
 --- !u!1 &267785941
 GameObject:
   m_ObjectHideFlags: 0
@@ -603,6 +655,10 @@ PrefabInstance:
       propertyPath: telemetry
       value: 
       objectReference: {fileID: 1643027034}
+    - target: {fileID: 6637922759900791323, guid: 60c93060cab62b042b39b3dc96726f1e, type: 3}
+      propertyPath: m_Name
+      value: OnBoardCamera
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
@@ -611,6 +667,11 @@ PrefabInstance:
 --- !u!4 &1288637691 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 1949381149384945809, guid: 60c93060cab62b042b39b3dc96726f1e, type: 3}
+  m_PrefabInstance: {fileID: 1288637690}
+  m_PrefabAsset: {fileID: 0}
+--- !u!20 &1288637692 stripped
+Camera:
+  m_CorrespondingSourceObject: {fileID: 5143065551288566312, guid: 60c93060cab62b042b39b3dc96726f1e, type: 3}
   m_PrefabInstance: {fileID: 1288637690}
   m_PrefabAsset: {fileID: 0}
 --- !u!1 &1426792358
@@ -1065,12 +1126,15 @@ MonoBehaviour:
   earth: {fileID: 1524927692}
   earthMap: {fileID: 2800000, guid: aad1ad83fefad934ab5169ff7377f81e, type: 3}
   mapWidth: 500
+  mapHeight: 280
   margin: 20
   markerSize: 12
+  borderWidth: 2
+  zoomLevel: 4
   startMinimized: 0
   longitudeOffset: 40
   invertLongitude: 0
-  invertLatitude: 1
+  invertLatitude: 0
   latitude: 0
   longitude: 0
 --- !u!1001 &2094232466871607905
@@ -1145,3 +1209,4 @@ SceneRoots:
   - {fileID: 1439323016}
   - {fileID: 1426792359}
   - {fileID: 2091935558}
+  - {fileID: 158922178}
