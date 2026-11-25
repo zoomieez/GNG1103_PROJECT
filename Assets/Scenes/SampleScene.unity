@@ -170,6 +170,8 @@ MonoBehaviour:
   margin: 20
   borderWidth: 2
   startMinimized: 0
+  baseFieldOfView: 45
+  zoomLevel: 1
   fullscreenKey: 118
 --- !u!1 &267785941
 GameObject:
@@ -655,6 +657,34 @@ PrefabInstance:
       propertyPath: telemetry
       value: 
       objectReference: {fileID: 1643027034}
+    - target: {fileID: 5143065551288566312, guid: 60c93060cab62b042b39b3dc96726f1e, type: 3}
+      propertyPath: m_Enabled
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 5143065551288566312, guid: 60c93060cab62b042b39b3dc96726f1e, type: 3}
+      propertyPath: m_CullingMask.m_Bits
+      value: 55
+      objectReference: {fileID: 0}
+    - target: {fileID: 5287318653609215480, guid: 60c93060cab62b042b39b3dc96726f1e, type: 3}
+      propertyPath: m_Enabled
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 5842894537205198598, guid: 60c93060cab62b042b39b3dc96726f1e, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: -1.5
+      objectReference: {fileID: 0}
+    - target: {fileID: 5842894537205198598, guid: 60c93060cab62b042b39b3dc96726f1e, type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 0.7071068
+      objectReference: {fileID: 0}
+    - target: {fileID: 5842894537205198598, guid: 60c93060cab62b042b39b3dc96726f1e, type: 3}
+      propertyPath: m_LocalRotation.x
+      value: 0.7071068
+      objectReference: {fileID: 0}
+    - target: {fileID: 5842894537205198598, guid: 60c93060cab62b042b39b3dc96726f1e, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.x
+      value: 90
+      objectReference: {fileID: 0}
     - target: {fileID: 6637922759900791323, guid: 60c93060cab62b042b39b3dc96726f1e, type: 3}
       propertyPath: m_Name
       value: OnBoardCamera
@@ -1078,6 +1108,7 @@ MonoBehaviour:
   delaySeconds: 0.3
   ghostOpacity: 0.2
   recordInterval: 0.02
+  ghostLayerName: SatelliteGhost
 --- !u!1 &2091935557
 GameObject:
   m_ObjectHideFlags: 0
