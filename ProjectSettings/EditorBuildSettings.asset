@@ -6,6 +6,9 @@ EditorBuildSettings:
   serializedVersion: 2
   m_Scenes:
   - enabled: 1
+    path: Assets/Scenes/ComfortLobby.unity
+    guid: bf2ebf832bc28a24ea79a600eec3b12b
+  - enabled: 1
     path: Assets/Scenes/MainMenu.unity
     guid: 2abfb156cf550d144b2672e669b9cf03
   - enabled: 1
@@ -13,3 +16,5 @@ EditorBuildSettings:
     guid: 99c9720ab356a0642a771bea13969a05
   m_configObjects:
     com.unity.input.settings.actions: {fileID: -944628639613478452, guid: 052faaac586de48259a63d0c4782560b, type: 3}
+    com.unity.xr.management.loader_settings: {fileID: 11400000, guid: df8143c32ebdf0944bfabe3f3398d25c, type: 2}
+    com.unity.xr.openxr.settings4: {fileID: 11400000, guid: e3f0e0bebd8220c42a7784dd2534d0e8, type: 2}

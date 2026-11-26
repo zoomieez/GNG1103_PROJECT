@@ -1,23 +1,20 @@
-
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
 public class QuitSimulation : MonoBehaviour
 {
-    // Use this for the exit button inside the simulation.
+    // Exit the simulation and return to the main menu.
     public void ReturnToMainMenu()
     {
         Time.timeScale = 1f;
         SceneManager.LoadScene("MainMenu");
     }
 
-    // Keep this for the Quit button on the main menu.
+    // Return to the comfort lobby.
     public void QuitGame()
     {
-#if UNITY_EDITOR
-        UnityEditor.EditorApplication.isPlaying = false;
-#else
-        Application.Quit();
-#endif
+        Time.timeScale = 1f;
+        Debug.Log("Returning to Comfort Lobby...");
+        SceneManager.LoadScene("ComfortLobby");
     }
 }
