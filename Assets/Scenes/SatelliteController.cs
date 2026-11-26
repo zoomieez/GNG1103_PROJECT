@@ -1,4 +1,3 @@
-
 using UnityEngine;
 
 public class SatelliteController : MonoBehaviour
@@ -28,6 +27,9 @@ public class SatelliteController : MonoBehaviour
     public float sunViewCameraDistance = 250f;
     public float earthViewFieldOfView = 60f;
 
+    [Header("Camera Transition Settings")]
+    public float transitionDuration = 1.5f;
+
     [Header("Mouse Camera Controls")]
     public float mouseSensitivity = 3f;
     public float minPitch = -80f;
@@ -41,6 +43,16 @@ public class SatelliteController : MonoBehaviour
     private float cameraPitch = 15f;
     private float originalFieldOfView;
 
+    // Camera transition variables
+    private bool isTransitioning = false;
+    private float transitionElapsed = 0f;
+
+    private Vector3 transitionStartOffset;
+    private float transitionStartFOV;
+
+    // Satellite position from the previous camera update
+    private Vector3 lastSatellitePosition;
+
     void Start()
     {
         if (satelliteCamera == null)
@@ -51,6 +63,7 @@ public class SatelliteController : MonoBehaviour
             Debug.LogError(
                 "Assign Earth and Main Camera!"
             );
+
             enabled = false;
             return;
         }
@@ -86,11 +99,15 @@ public class SatelliteController : MonoBehaviour
         satelliteCamera.farClipPlane = 100000f;
 
         UpdateOrbitPosition();
+
+        lastSatellitePosition = transform.position;
+
         UpdateCamera();
     }
 
     void Update()
     {
+        // Orbital speed controls
         if (Input.GetKeyDown(KeyCode.UpArrow))
         {
             orbitSpeed = Mathf.Min(
@@ -112,6 +129,7 @@ public class SatelliteController : MonoBehaviour
 
         UpdateOrbitPosition();
 
+        // Manual debug movement
         if (allowManualMovement)
         {
             Vector3 movement = Vector3.zero;
@@ -128,15 +146,23 @@ public class SatelliteController : MonoBehaviour
                 moveSpeed * Time.deltaTime;
         }
 
+        // Satellite rotation
         transform.Rotate(
             rotationSpeed * Time.deltaTime,
             Space.Self
         );
 
+        // Switch camera perspectives
         if (Input.GetKeyDown(KeyCode.C))
-            cameraMode = (cameraMode + 1) % 3;
+        {
+            BeginCameraTransition(
+                (cameraMode + 1) % 3
+            );
+        }
 
+        // Free-roam mouse controls
         if (cameraMode == 0 &&
+            !isTransitioning &&
             Input.GetMouseButton(1))
         {
             cameraYaw +=
@@ -148,7 +174,9 @@ public class SatelliteController : MonoBehaviour
                 mouseSensitivity;
 
             cameraPitch = Mathf.Clamp(
-                cameraPitch, minPitch, maxPitch
+                cameraPitch,
+                minPitch,
+                maxPitch
             );
         }
     }
@@ -173,16 +201,37 @@ public class SatelliteController : MonoBehaviour
             earthCenter + inclination * orbitPosition;
     }
 
+    void BeginCameraTransition(int newMode)
+    {
+        // Capture the camera's actual current position
+        // relative to the satellite.
+        transitionStartOffset =
+            satelliteCamera.transform.position -
+            lastSatellitePosition;
+
+        // Capture its current field of view
+        transitionStartFOV =
+            satelliteCamera.fieldOfView;
+
+        cameraMode = newMode;
+
+        transitionElapsed = 0f;
+        isTransitioning = true;
+    }
+
     void LateUpdate()
     {
         UpdateCamera();
+
+        lastSatellitePosition =
+            transform.position;
     }
 
-    void UpdateCamera()
+    void GetTargetCamera(
+        out Vector3 targetOffset,
+        out float targetFOV
+    )
     {
-        if (satelliteCamera == null)
-            return;
-
         Vector3 outward =
             transform.position - earthCenter;
 
@@ -194,84 +243,148 @@ public class SatelliteController : MonoBehaviour
         if (cameraMode == 1)
         {
             // EARTH VIEW
-            // Satellite in foreground, Earth behind it.
+            targetOffset =
+                outward * earthViewCameraDistance;
 
-            Vector3 towardEarth =
-                (earthCenter - transform.position).normalized;
-
-            satelliteCamera.transform.position =
-                transform.position -
-                towardEarth * earthViewCameraDistance;
-
-            satelliteCamera.transform.LookAt(
-                earthCenter,
-                Vector3.up
-            );
-
-            satelliteCamera.fieldOfView =
-                earthViewFieldOfView;
+            targetFOV = earthViewFieldOfView;
         }
 
         else if (cameraMode == 2 && sun != null)
         {
             // SUN VIEW
-            // Camera follows the satellite but is offset
-            // so the satellite doesn't block the Sun.
-
             Vector3 towardSun =
-                (sun.position - transform.position).normalized;
+                (sun.position -
+                transform.position).normalized;
 
-            // Move camera away from the Sun
-            Vector3 cameraPosition =
-                transform.position -
-                towardSun * sunViewCameraDistance;
-
-            // Shift camera sideways relative to the Sun axis
             Vector3 sideways =
-                Vector3.Cross(towardSun, Vector3.up).normalized;
+                Vector3.Cross(
+                    towardSun,
+                    Vector3.up
+                ).normalized;
 
             if (sideways.sqrMagnitude < 0.001f)
                 sideways = Vector3.right;
 
-            cameraPosition +=
-                sideways * sunViewCameraDistance * 0.35f;
+            targetOffset =
+                -towardSun * sunViewCameraDistance;
 
-            satelliteCamera.transform.position = cameraPosition;
+            targetOffset +=
+                sideways *
+                sunViewCameraDistance * 0.35f;
 
-            // Keep satellite centered while showing Sun off-axis
-            satelliteCamera.transform.LookAt(
-                transform.position,
-                Vector3.up
-            );
-
-            satelliteCamera.fieldOfView =
-                earthViewFieldOfView;
+            targetFOV = earthViewFieldOfView;
         }
 
         else
         {
-            // SATELLITE VIEW
-            // Close-up camera with mouse controls.
-
+            // FREE-ROAM SATELLITE VIEW
             Quaternion mouseRotation =
                 Quaternion.Euler(
-                    cameraPitch, cameraYaw, 0f
+                    cameraPitch,
+                    cameraYaw,
+                    0f
                 );
 
             Vector3 cameraDirection =
                 mouseRotation * outward;
 
-            satelliteCamera.transform.position =
-                transform.position +
-                cameraDirection * satelliteCameraDistance;
+            targetOffset =
+                cameraDirection *
+                satelliteCameraDistance;
 
-            satelliteCamera.transform.LookAt(
-                transform.position,
-                Vector3.up
+            targetFOV = originalFieldOfView;
+        }
+    }
+
+    void UpdateCamera()
+    {
+        if (satelliteCamera == null)
+            return;
+
+        Vector3 targetOffset;
+        float targetFOV;
+
+        // Recalculate the destination every frame
+        // because the satellite is constantly moving.
+        GetTargetCamera(
+            out targetOffset,
+            out targetFOV
+        );
+
+        Vector3 currentOffset;
+        float currentFOV;
+
+        if (isTransitioning)
+        {
+            transitionElapsed += Time.deltaTime;
+
+            float t = Mathf.Clamp01(
+                transitionElapsed /
+                Mathf.Max(0.01f, transitionDuration)
             );
 
-            satelliteCamera.fieldOfView =
-                originalFieldOfView;
+            // Smooth acceleration and deceleration
+            float smoothT =
+                t * t * (3f - 2f * t);
+
+            // Starting and destination directions
+            Vector3 startDirection =
+                transitionStartOffset.normalized;
+
+            Vector3 targetDirection =
+                targetOffset.normalized;
+
+            // Travel around the satellite
+            Vector3 blendedDirection =
+                Vector3.Slerp(
+                    startDirection,
+                    targetDirection,
+                    smoothT
+                ).normalized;
+
+            // Smoothly adjust camera distance
+            float blendedDistance =
+                Mathf.Lerp(
+                    transitionStartOffset.magnitude,
+                    targetOffset.magnitude,
+                    smoothT
+                );
+
+            currentOffset =
+                blendedDirection * blendedDistance;
+
+            // Smoothly adjust field of view
+            currentFOV = Mathf.Lerp(
+                transitionStartFOV,
+                targetFOV,
+                smoothT
+            );
+
+            if (t >= 1f)
+            {
+                isTransitioning = false;
+
+                currentOffset = targetOffset;
+                currentFOV = targetFOV;
+            }
         }
+        else
+        {
+            currentOffset = targetOffset;
+            currentFOV = targetFOV;
+        }
+
+        // Apply camera position
+        satelliteCamera.transform.position =
+            transform.position + currentOffset;
+
+        // Keep the satellite centered
+        satelliteCamera.transform.LookAt(
+            transform.position,
+            Vector3.up
+        );
+
+        satelliteCamera.fieldOfView =
+            currentFOV;
     }
 }
