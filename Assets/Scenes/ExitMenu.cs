@@ -1,5 +1,6 @@
 
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 public class ExitMenu : MonoBehaviour
 {
@@ -111,12 +112,6 @@ public class ExitMenu : MonoBehaviour
 
     void ExitSimulation()
     {
-#if UNITY_EDITOR
-        // Stop Play mode while testing in Unity
-        UnityEditor.EditorApplication.isPlaying = false;
-#else
-        // Close the built application
-        Application.Quit();
-#endif
+        SceneManager.LoadScene("MainMenu");
     }
 }
