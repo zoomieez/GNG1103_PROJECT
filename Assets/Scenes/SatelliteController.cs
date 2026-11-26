@@ -1,4 +1,5 @@
 using UnityEngine;
+using UnityEngine.XR;
 
 public class SatelliteController : MonoBehaviour
 {
@@ -37,6 +38,9 @@ public class SatelliteController : MonoBehaviour
 
     private int cameraMode = 0;
 
+    // VR controller button tracking
+    private bool previousAButton = false;
+
     private Vector3 earthCenter;
     private float orbitAngle = 0f;
     private float cameraYaw = 0f;
@@ -50,7 +54,6 @@ public class SatelliteController : MonoBehaviour
     private Vector3 transitionStartOffset;
     private float transitionStartFOV;
 
-    // Satellite position from the previous camera update
     private Vector3 lastSatellitePosition;
 
     void Start()
@@ -60,16 +63,12 @@ public class SatelliteController : MonoBehaviour
 
         if (earth == null || satelliteCamera == null)
         {
-            Debug.LogError(
-                "Assign Earth and Main Camera!"
-            );
-
+            Debug.LogError("Assign Earth and Main Camera!");
             enabled = false;
             return;
         }
 
-        originalFieldOfView =
-            satelliteCamera.fieldOfView;
+        originalFieldOfView = satelliteCamera.fieldOfView;
 
         Renderer[] renderers =
             earth.GetComponentsInChildren<Renderer>();
@@ -152,13 +151,28 @@ public class SatelliteController : MonoBehaviour
             Space.Self
         );
 
-        // Switch camera perspectives
-        if (Input.GetKeyDown(KeyCode.C))
+        // VR right controller
+        InputDevice rightController =
+            InputDevices.GetDeviceAtXRNode(XRNode.RightHand);
+
+        bool aButton = false;
+
+        rightController.TryGetFeatureValue(
+            CommonUsages.primaryButton,
+            out aButton
+        );
+
+        // Switch camera using C key or VR A button
+        if (Input.GetKeyDown(KeyCode.C) ||
+            (aButton && !previousAButton))
         {
             BeginCameraTransition(
                 (cameraMode + 1) % 3
             );
         }
+
+        // Prevent repeated switching while holding A
+        previousAButton = aButton;
 
         // Free-roam mouse controls
         if (cameraMode == 0 &&
@@ -203,13 +217,12 @@ public class SatelliteController : MonoBehaviour
 
     void BeginCameraTransition(int newMode)
     {
-        // Capture the camera's actual current position
-        // relative to the satellite.
+        // Capture current camera position
         transitionStartOffset =
             satelliteCamera.transform.position -
             lastSatellitePosition;
 
-        // Capture its current field of view
+        // Capture current field of view
         transitionStartFOV =
             satelliteCamera.fieldOfView;
 
@@ -248,7 +261,6 @@ public class SatelliteController : MonoBehaviour
 
             targetFOV = earthViewFieldOfView;
         }
-
         else if (cameraMode == 2 && sun != null)
         {
             // SUN VIEW
@@ -274,7 +286,6 @@ public class SatelliteController : MonoBehaviour
 
             targetFOV = earthViewFieldOfView;
         }
-
         else
         {
             // FREE-ROAM SATELLITE VIEW
@@ -304,8 +315,6 @@ public class SatelliteController : MonoBehaviour
         Vector3 targetOffset;
         float targetFOV;
 
-        // Recalculate the destination every frame
-        // because the satellite is constantly moving.
         GetTargetCamera(
             out targetOffset,
             out targetFOV
@@ -327,7 +336,6 @@ public class SatelliteController : MonoBehaviour
             float smoothT =
                 t * t * (3f - 2f * t);
 
-            // Starting and destination directions
             Vector3 startDirection =
                 transitionStartOffset.normalized;
 
