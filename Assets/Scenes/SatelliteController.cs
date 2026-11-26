@@ -9,6 +9,7 @@ public class SatelliteController : MonoBehaviour
     public float speedStep = 100f;
     public float maxSpeed = 5000f;
     public float orbitInclination = 25f;
+    public bool reverseOrbitDirection = false;
 
     [Header("Manual Debug Movement")]
     public bool allowManualMovement = false;
@@ -107,7 +108,8 @@ public class SatelliteController : MonoBehaviour
             );
         }
 
-        orbitAngle += orbitSpeed * Time.deltaTime;
+        float direction = reverseOrbitDirection ? -1f : 1f;
+        orbitAngle += direction * orbitSpeed * Time.deltaTime;
         orbitAngle %= 360f;
 
         UpdateOrbitPosition();
