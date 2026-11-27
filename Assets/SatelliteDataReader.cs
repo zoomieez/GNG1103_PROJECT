@@ -1,20 +1,27 @@
 
+
 using System;
 using UnityEngine;
 
 [Serializable]
-public class SatelliteValues
+public class EOSATOrbit
 {
-    public float x;
-    public float y;
-    public float z;
+    public float[] pos_eci_km;
 }
 
 [Serializable]
-public class SatelliteData
+public class EOSATAttitude
 {
-    public SatelliteValues position;
-    public SatelliteValues rotation;
+    public float[] q_body_to_eci;
+}
+
+[Serializable]
+public class EOSATFrame
+{
+    public string type;
+    public int seq;
+    public EOSATOrbit orbit;
+    public EOSATAttitude attitude;
 }
 
 public class SatelliteDataReader : MonoBehaviour
@@ -29,28 +36,47 @@ public class SatelliteDataReader : MonoBehaviour
             return;
         }
 
-        SatelliteData data =
-            JsonUtility.FromJson<SatelliteData>(
-                satelliteFile.text);
+        string[] lines = satelliteFile.text.Split('\n');
+        int count = 0;
 
-        if (data == null ||
-            data.position == null ||
-            data.rotation == null)
+        foreach (string line in lines)
         {
-            Debug.LogError("Invalid satellite data!");
-            return;
+            if (string.IsNullOrWhiteSpace(line))
+                continue;
+
+            EOSATFrame frame;
+
+            try
+            {
+                frame = JsonUtility.FromJson<EOSATFrame>(line);
+            }
+            catch (Exception)
+            {
+                Debug.LogWarning("Invalid JSON line skipped");
+                continue;
+            }
+
+            if (frame == null || frame.type != "state" ||
+                frame.orbit == null || frame.attitude == null ||
+                frame.orbit.pos_eci_km == null ||
+                frame.attitude.q_body_to_eci == null ||
+                frame.orbit.pos_eci_km.Length != 3 ||
+                frame.attitude.q_body_to_eci.Length != 4)
+                continue;
+
+            count++;
+
+            if (count == 1)
+            {
+                Debug.Log("Position: " +
+                    string.Join(", ", frame.orbit.pos_eci_km));
+
+                Debug.Log("Rotation: " +
+                    string.Join(", ", frame.attitude.q_body_to_eci));
+            }
         }
 
-        Debug.Log("Position: " +
-            data.position.x + ", " +
-            data.position.y + ", " +
-            data.position.z);
-
-        Debug.Log("Rotation: " +
-            data.rotation.x + ", " +
-            data.rotation.y + ", " +
-            data.rotation.z);
+        Debug.Log("Satellite frames read: " + count);
     }
 }
-
 
